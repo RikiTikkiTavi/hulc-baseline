@@ -6,13 +6,21 @@ import cv2
 import hydra
 import numpy as np
 from omegaconf import OmegaConf
-import pyhash
+#import pyhash
 import torch
 
 from hulc.models.hulc import Hulc
 from hulc.utils.utils import add_text, format_sftp_path
 
-hasher = pyhash.fnv1_32()
+import xxhash
+
+def fnv1_32(data: bytes) -> int:
+    return xxhash.xxh32(data).intdigest()
+
+hasher = fnv1_32
+
+
+#hasher = pyhash.fnv1_32()
 logger = logging.getLogger(__name__)
 
 

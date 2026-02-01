@@ -4,7 +4,7 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 from omegaconf import DictConfig
-import pyhash
+#import pyhash
 import torch
 from torch.utils.data import Dataset
 
@@ -17,7 +17,14 @@ from hulc.datasets.utils.episode_utils import (
     process_state,
 )
 
-hasher = pyhash.fnv1_32()
+import xxhash
+
+def fnv1_32(data: bytes) -> int:
+    return xxhash.xxh32(data).intdigest()
+
+hasher = fnv1_32
+
+#hasher = pyhash.fnv1_32()
 logger = logging.getLogger(__name__)
 
 
