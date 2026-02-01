@@ -8,8 +8,9 @@ opencv-python
 omegaconf
 plotly
 ftfy
-pyhash
-pytorch-lightning==1.6.5
+xxhash
+# pyhash
+pytorch-lightning==1.8.3
 torchvision
 # MulticoreTSNE
 gitpython
