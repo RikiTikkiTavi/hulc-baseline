@@ -236,6 +236,16 @@ class Hulc(pl.LightningModule):
         scheduler = hydra.utils.instantiate(self.lr_scheduler, optimizer)
         return {"optimizer": optimizer, "lr_scheduler": {"scheduler": scheduler, "interval": "step", "frequency": 1}}
 
+    def lr_scheduler_step(self, scheduler, *args, **kwargs) -> None:
+        """Step the LR scheduler.
+
+        Overridden to satisfy newer PyTorch Lightning versions that require this
+        hook when using non-standard schedulers (e.g. transformers LambdaLR wrappers).
+        The *args/**kwargs absorb the optional `optimizer_idx` and `metric` arguments
+        whose positions differ between PL 1.x and PL 2.x.
+        """
+        scheduler.step()
+
     def lmp_train(
         self, perceptual_emb: torch.Tensor, latent_goal: torch.Tensor, train_acts: torch.Tensor, robot_obs: torch.Tensor
     ) -> Tuple[

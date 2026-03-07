@@ -1,6 +1,7 @@
 
 
 import logging
+from datetime import timedelta
 from pathlib import Path
 import sys
 from typing import List, Union
@@ -12,6 +13,7 @@ from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import LightningLoggerBase
+from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
 
 import hulc.models.hulc as models_m
@@ -62,9 +64,14 @@ def train(cfg: DictConfig) -> None:
         "benchmark": False,
     }
 
-    # Configure multi-GPU training
+    # Configure multi-GPU training.
+    # Use an explicit DDPStrategy with a 3-hour rendezvous timeout instead of
+    # the default 30-minute timeout.  HulcDataModule.prepare_data() loads the
+    # full ShmDataset only on rank 0 *before* DDP is set up; other ranks skip
+    # it and immediately call init_process_group().  With the task_D_D dataset
+    # (~30 min to load), the default 30-minute window is too tight.
     if is_multi_gpu_training(trainer_args["gpus"]):  # type: ignore
-        trainer_args["strategy"] = "ddp"
+        trainer_args["strategy"] = DDPStrategy(timeout=timedelta(hours=3))
         if not cfg.slurm:
             modify_argv_hydra()
 
